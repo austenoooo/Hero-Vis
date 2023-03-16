@@ -23,6 +23,7 @@ let color = [0x3b0000, 0xff80b9, 0xff0000, 0xfceeae, 0xeaffb9];
 let materials = [];
 
 let effect;
+let effectSte;
 
 let text;
 
@@ -32,18 +33,18 @@ let rotate = 0;
 let count = 0;
 
 let defaultTextParameter = {
-  size: 8,
-  height: 0,
-  curSegments: 10,
+  size: 25,
+  height: 1,
+  curSegments: 40,
   bevelThickness: 1,
   bevelSize: 1,
   bevelEnabled: false,
-  bevelSegments: 10
+  bevelSegments: 40
 }
 
 const loader = new FontLoader();
 //'fonts/Unbounded_Regular.json' or 'fonts/helvetiker_bold.typeface.json'
-loader.load( 'fonts/cartoon.json', function ( font ) {
+loader.load( 'fonts/unbounded_m.json', function ( font ) {
 
   //"Lexend_Deca_ExtraBold_Regular.json"
   init( font );
@@ -74,17 +75,18 @@ function init(font) {
 
   // controls = new OrbitControls(camera, renderer.domElement);
 
-  // camera.position.set(300, 300, 300);
-  // camera.lookAt(0, 10, 0);
-
   camera.position.set(80, 0, 0);
   camera.lookAt(80, 0, -10);
 
   // add light
   const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
   scene.add(directionalLight);
+  // sceneText.add(directionalLight);
   directionalLight.position.set(-50, 0, -50);
   directionalLight.lookAt(0, 100, 0);
+
+  const light = new THREE.AmbientLight( 0xffffff ); // soft white light
+  sceneText.add( light );
 
   // helper functions
   const axesHelper = new THREE.AxesHelper(30);
@@ -110,6 +112,7 @@ function init(font) {
   loop();
 }
 
+
 function addText(font) {
   let geometry = new TextGeometry("AUSTEN LI", {
     font: font,
@@ -124,11 +127,12 @@ function addText(font) {
     bevelSegments: defaultTextParameter.bevelSegments
   });
 
-  let fontMaterial = new THREE.MeshBasicMaterial({color: 0xeaffb9});
+
+  let fontMaterial = new THREE.MeshBasicMaterial({ color: 0xfae2fd});
 
   text = new THREE.Mesh(geometry, fontMaterial);
   text.position.set(80, 0, -30);
-  sceneText.add(text);
+  scene.add(text);
 
 }
 
@@ -196,7 +200,7 @@ function loop() {
   count ++;
   camera.position.set(80, Math.sin(count/200) * 40, 0);
   camera.lookAt(80, Math.sin(count/200) * 40, -10);
-  text.position.set(50, Math.sin(count/200) * 40, -100);
+  text.position.set(-30 + Math.sin(count/80) * 5, Math.sin(count/200) * 40 + Math.sin(count/60) * 5 - 20, -100);
 
 
   // composer.render();
