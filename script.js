@@ -2,15 +2,13 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-// import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
-// import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
-// import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
-// import { OutlinePass } from "three/addons/postprocessing/OutlinePass.js";
-// import { FXAAShader } from "three/addons/shaders/FXAAShader.js";
 import { OutlineEffect } from 'three/addons/effects/OutlineEffect.js';
 
+import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 
-let scene, camera, renderer;
+
+let scene, camera, renderer, sceneText;
 let controls;
 
 let fiveTone, fourTone, threeTone;
@@ -19,27 +17,47 @@ let modelLoader = new GLTFLoader();
 
 let allObjects = new THREE.Group();
 
-let color = [0x3b0000, 0xff80b9, 0xff0000, 0xfceeae];
+let color = [0x3b0000, 0xff80b9, 0xff0000, 0xfceeae, 0xeaffb9];
 // let color = [0xb3ffae, 0xf8ffdb, 0xff6464, 0xff7d7d];
 
 let materials = [];
 
 let effect;
 
-let composer;
+let text;
 
 let outlineObjects = [];
 
 let rotate = 0;
 let count = 0;
 
-function init() {
+let defaultTextParameter = {
+  size: 8,
+  height: 0,
+  curSegments: 10,
+  bevelThickness: 1,
+  bevelSize: 1,
+  bevelEnabled: false,
+  bevelSegments: 10
+}
+
+const loader = new FontLoader();
+//'fonts/Unbounded_Regular.json' or 'fonts/helvetiker_bold.typeface.json'
+loader.load( 'fonts/cartoon.json', function ( font ) {
+
+  //"Lexend_Deca_ExtraBold_Regular.json"
+  init( font );
+
+} );
+
+function init(font) {
   scene = new THREE.Scene();
-  scene.backgroundIntensity = 0.5;
+  sceneText = new THREE.Scene();
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.autoClear = false;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
   document.body.appendChild(renderer.domElement);
@@ -77,14 +95,11 @@ function init() {
   // outline effect
   effect = new OutlineEffect( renderer );
 
-  // environmentMap();
-
   loadGradientMap();
 
   createMaterial();
 
-  // postProcessing();
-
+  addText(font);
   
   for (let i = 0; i < 100; i++) {
     createBall();
@@ -95,16 +110,31 @@ function init() {
   loop();
 }
 
-function environmentMap() {
-  let loader = new RGBELoader();
-  loader.load("./textures/environment.hdr", (texture) => {
-    texture.mapping = THREE.EquirectangularReflectionMapping;
-    scene.environment = texture;
+function addText(font) {
+  let geometry = new TextGeometry("AUSTEN LI", {
+    font: font,
+    
+    size: defaultTextParameter.size,
+    height: defaultTextParameter.height,
+    curSegments: defaultTextParameter.curSegments,
+
+    bevelThickness: defaultTextParameter.bevelThickness,
+    bevelSize: defaultTextParameter.bevelSize,
+    bevelEnabled: defaultTextParameter.bevelEnabled,
+    bevelSegments: defaultTextParameter.bevelSegments
   });
+
+  let fontMaterial = new THREE.MeshBasicMaterial({color: 0xeaffb9});
+
+  text = new THREE.Mesh(geometry, fontMaterial);
+  text.position.set(80, 0, -30);
+  sceneText.add(text);
+
 }
 
+
 function createMaterial() {
-  for (let i = 1; i < 4; i++) {
+  for (let i = 1; i < 5; i++) {
     let newMaterail = new THREE.MeshToonMaterial({
       color: color[i],
       gradientMap: fourTone,
@@ -166,14 +196,14 @@ function loop() {
   count ++;
   camera.position.set(80, Math.sin(count/200) * 40, 0);
   camera.lookAt(80, Math.sin(count/200) * 40, -10);
+  text.position.set(50, Math.sin(count/200) * 40, -100);
 
 
   // composer.render();
-
+  renderer.clear();
+  renderer.render( sceneText, camera);
   effect.render( scene, camera );
 
   window.requestAnimationFrame(loop);
   
 }
-
-init();
