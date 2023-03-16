@@ -51,6 +51,10 @@ loader.load( 'fonts/unbounded_m.json', function ( font ) {
 
 } );
 
+window.onresize = function () {
+  location.reload();
+};
+
 function init(font) {
   scene = new THREE.Scene();
   sceneText = new THREE.Scene();
